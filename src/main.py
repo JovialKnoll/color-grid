@@ -58,11 +58,33 @@ class Visual(object):
         self.screen = pygame.display.set_mode(setw, seth)#, pygame.NOFRAME) perhaps
         self.w = setw
         self.h = seth
-        self.pixel_sets = [[[Pixel(x,y,r,g,b) for y in range(seth)] for x in range(setw)] for n in range(2)]
+        self.pixel_sets = [[[Pixel(x, y, x-y, (x+y)/2, y-x) for y in range(seth)] for x in range(setw)] for n in range(2)]
         self.current_set = 0
         
     def update(self, t):
         for x in range(self.w):
             for y in range(self.h):
-                self.pixel_sets[self.current_set][x][y].update(t, self.pixel_sets[self.current_set])
-                self.pixel_sets[not self.current_set][x][y].setColor()
+                self.pixel_sets[not self.current_set][x][y].setColor( self.pixel_sets[self.current_set][x][y].update(t, self.pixel_sets[self.current_set]) )
+        self.current_set = not self.current_set
+        
+    def draw(self):
+        for columns in self.pixel_sets[self.current_set]:
+            for pixels in columns:
+                pixels.draw(self.screen)
+        pygame.display.flip()
+        
+on = True
+pygame.init()
+my_visual = Visual(SCREEN_WIDTH,SCREEN_HEIGHT)
+my_clock = pygame.time.Clock()
+while on:
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            on = False
+        if event.type == pygame.KEYDOWN:
+            if event.ky == pygame.K_ESCAPE:
+                on = False
+    my_visual.update(my_clock.tick())
+    my_visual.draw()
+pygame.quit()
+sys.exit()
