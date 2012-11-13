@@ -6,7 +6,7 @@ import pygame, sys, math, random
 random.seed()
 COLOR_FRICTION = 0.001
 COLOR_CHANGE = 100.0
-SCREEN_WIDTH = 128
+SCREEN_WIDTH = 64
 
 def roundin(num):
     if math.fabs(num) < 4:
