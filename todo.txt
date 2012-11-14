@@ -1,0 +1,3 @@
+image printing option
+ability to do things on command line while game runs:
+change numbers, reset, change rules for color starting point etc, make image file, all sorts of stuff
