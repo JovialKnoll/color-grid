@@ -1,3 +1,9 @@
+***! ->
+find a more efficient way of doing visuals, I really need to draw everything.
+use numpy arrays, maybe. use pyopengl, maybe
+be prepared to redo many things... or, at least the drawing stuff
+
+
 image printing option
-ability to do things on command line while game runs:
+ability to do things through pygcurse while game runs:
 change numbers, reset, change rules for color starting point etc, make image file, all sorts of stuff

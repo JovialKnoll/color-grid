@@ -1,6 +1,8 @@
 #Brett Kaplan
 #November 12, 2012
+from __future__ import division
 import pygame, sys, math, random
+import pygcurse
 random.seed()
 
 class Pixel(object):
@@ -19,13 +21,14 @@ class Pixel(object):
         
 class Visual(object):
     def __init__(self, setw, seth):
-        self.w = setw
+        #self.w = setw
         #self.h = seth
-        self.screen = pygame.display.set_mode((self.w, self.w))
-        self.pixel_sets = [[[Pixel(x, y, max(0,(x-y)*256/self.w), max(0,(x+y-self.w)*256/self.w), max(0,(y-x)*256/self.w)) for y in range(self.w)] for x in range(self.w)] for n in range(2)]
+        #self.screen = pygame.display.set_mode((self.w, self.h))
+        self.pixel_sets = [[[Pixel(x, y, max(0,int((x/setw-y/seth)*256)), max(0,int((x/setw+y/seth-1)*256)), max(0,int((y/seth-x/setw)*256))) for y in range(seth)] for x in range(setw)] for n in range(2)]
         self.current_set = 0
         self.awaiting_update = [dict() for n in range(2)]#list of dicts; (x,y):s
-        self.awaiting_draw = sum( self.pixel_sets[self.current_set] ,[])
+        #self.awaiting_draw = sum(self.pixel_sets[self.current_set] ,[])
+        self.setScreen(setw, seth)
         
     def update(self, t):
         if len(self.awaiting_update[self.current_set]) > 0:
@@ -34,44 +37,52 @@ class Visual(object):
                     continue
                 self.awaiting_draw.append(self.pixel_sets[not self.current_set][pxy[0]][pxy[1]].shiftColor(self.pixel_sets[self.current_set][pxy[0]][pxy[1]].color, shift))
                 txy = ((pxy[0]-1)%self.w,pxy[1])
+                self.awaiting_draw.append(self.pixel_sets[not self.current_set][txy[0]][txy[1]])
+                
                 if txy in self.awaiting_update[not self.current_set]:
                     if self.awaiting_update[not self.current_set][txy] > 0:
-                        #self.awaiting_update[not self.current_set][txy] = (self.awaiting_update[not self.current_set][txy]+math.fabs(shift))/-2#shift, maybe no fabs
-                        self.awaiting_update[not self.current_set][txy] = (self.awaiting_update[not self.current_set][txy]+shift)/-2
+                        #self.awaiting_update[not self.current_set][txy] = (self.awaiting_update[not self.current_set][txy]+math.fabs(shift))//-2#shift, maybe no fabs
+                        self.awaiting_update[not self.current_set][txy] = (self.awaiting_update[not self.current_set][txy]+shift)//-2
                     else:
                         del self.awaiting_update[not self.current_set][txy]
                 else:
-                    self.awaiting_update[not self.current_set][txy] = shift/2#math.fabs(shift)/2
+                    self.awaiting_update[not self.current_set][txy] = shift//2#math.fabs(shift)//2
                 
                 txy = ((pxy[0]+1)%self.w,pxy[1])
-                if txy in self.awaiting_update[not self.current_set]:
-                    if self.awaiting_update[not self.current_set][txy] > 0:
-                        #self.awaiting_update[not self.current_set][txy] = (self.awaiting_update[not self.current_set][txy]+math.fabs(shift))/-2#shift, maybe no fabs
-                        self.awaiting_update[not self.current_set][txy] = (self.awaiting_update[not self.current_set][txy]+shift)/-2
-                    else:
-                        del self.awaiting_update[not self.current_set][txy]
-                else:
-                    self.awaiting_update[not self.current_set][txy] = shift/2#math.fabs(shift)/2
+                self.awaiting_draw.append(self.pixel_sets[not self.current_set][txy[0]][txy[1]])
                 
-                txy = (pxy[0],(pxy[1]-1)%self.w)
                 if txy in self.awaiting_update[not self.current_set]:
                     if self.awaiting_update[not self.current_set][txy] > 0:
-                        #self.awaiting_update[not self.current_set][txy] = (self.awaiting_update[not self.current_set][txy]+math.fabs(shift))/-2#shift, maybe no fabs
-                        self.awaiting_update[not self.current_set][txy] = (self.awaiting_update[not self.current_set][txy]+shift)/-2
+                        #self.awaiting_update[not self.current_set][txy] = (self.awaiting_update[not self.current_set][txy]+math.fabs(shift))//-2#shift, maybe no fabs
+                        self.awaiting_update[not self.current_set][txy] = (self.awaiting_update[not self.current_set][txy]+shift)//-2
                     else:
                         del self.awaiting_update[not self.current_set][txy]
                 else:
-                    self.awaiting_update[not self.current_set][txy] = shift/2#math.fabs(shift)/2
+                    self.awaiting_update[not self.current_set][txy] = shift//2#math.fabs(shift)//2
                 
-                txy = (pxy[0],(pxy[1]+1)%self.w)
+                txy = (pxy[0],(pxy[1]-1)%self.h)
+                self.awaiting_draw.append(self.pixel_sets[not self.current_set][txy[0]][txy[1]])
+                
                 if txy in self.awaiting_update[not self.current_set]:
                     if self.awaiting_update[not self.current_set][txy] > 0:
-                        #self.awaiting_update[not self.current_set][txy] = (self.awaiting_update[not self.current_set][txy]+math.fabs(shift))/-2#shift, maybe no fabs
-                        self.awaiting_update[not self.current_set][txy] = (self.awaiting_update[not self.current_set][txy]+shift)/-2
+                        #self.awaiting_update[not self.current_set][txy] = (self.awaiting_update[not self.current_set][txy]+math.fabs(shift))//-2#shift, maybe no fabs
+                        self.awaiting_update[not self.current_set][txy] = (self.awaiting_update[not self.current_set][txy]+shift)//-2
                     else:
                         del self.awaiting_update[not self.current_set][txy]
                 else:
-                    self.awaiting_update[not self.current_set][txy] = shift/2#math.fabs(shift)/2
+                    self.awaiting_update[not self.current_set][txy] = shift//2#math.fabs(shift)//2
+                
+                txy = (pxy[0],(pxy[1]+1)%self.h)
+                self.awaiting_draw.append(self.pixel_sets[not self.current_set][txy[0]][txy[1]])
+                
+                if txy in self.awaiting_update[not self.current_set]:
+                    if self.awaiting_update[not self.current_set][txy] > 0:
+                        #self.awaiting_update[not self.current_set][txy] = (self.awaiting_update[not self.current_set][txy]+math.fabs(shift))//-2#shift, maybe no fabs
+                        self.awaiting_update[not self.current_set][txy] = (self.awaiting_update[not self.current_set][txy]+shift)//-2
+                    else:
+                        del self.awaiting_update[not self.current_set][txy]
+                else:
+                    self.awaiting_update[not self.current_set][txy] = shift//2#math.fabs(shift)//2
             self.awaiting_update[self.current_set].clear()
             self.current_set = not self.current_set
         
@@ -81,11 +92,19 @@ class Visual(object):
         self.awaiting_draw = []
         pygame.display.flip()
         
+    def setScreen(self, setw=-1, seth=-1):
+        if setw > 0 and seth > 0:
+            self.w = setw
+            self.h = seth
+        self.screen = pygame.display.set_mode((self.w, self.h))
+        self.awaiting_draw = sum(self.pixel_sets[self.current_set] ,[])
+        
 class Game(object):
     def __init__(self, scr_width):
         pygame.init()
         self.my_visual = Visual(scr_width,scr_width)
         self.my_clock = pygame.time.Clock()
+        self.key_input = 0
         
     def __del__(self):
         pygame.quit()
@@ -97,8 +116,21 @@ class Game(object):
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_ESCAPE:
                     return 0
-                if event.key == pygame.K_m:
-                    return 2
+                elif event.key == pygame.K_RETURN:
+                    #buncha stuff
+                    pygame.display.quit()
+                    
+                    test_win = pygcurse.PygcurseWindow(40,25)
+                    test_win.pygprint('give input:')
+                    test_input = test_win.input()
+                    print test_input
+                    
+                    pygame.display.init()
+                    self.my_visual.setScreen()
+                    #pygame.event.clear()
+                    break
+                #if event.key == pygame.K_m:
+                #    return 2
             if event.type == pygame.MOUSEBUTTONDOWN:
                 mxy = event.pos
                 self.my_visual.awaiting_update[self.my_visual.current_set][mxy] = shft_amt
